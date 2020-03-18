@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import {Operation, ServiceObject, util, Metadata} from '@google-cloud/common';
+import {
+  Operation,
+  ServiceObject,
+  util,
+  Metadata,
+  ApiError,
+} from '@google-cloud/common';
 import {promisifyAll} from '@google-cloud/promisify';
 
 import {CreateProjectCallback, CreateProjectResponse, Resource} from '.';
@@ -68,6 +74,21 @@ export interface GetIamPolicyCallback {
 }
 export interface GetIamPolicyOptions {
   requestedPolicyVersion: number;
+}
+export interface Ancestry {
+  ancestor: Ancestor[];
+}
+export interface Ancestor {
+  resourceId: ResourceId;
+}
+export interface ResourceId {
+  id: string;
+  type: string;
+}
+
+export type GetAncestryResponse = [Ancestry];
+export interface GetAncestryCallback {
+  (err: ApiError | null, ancestry?: Ancestry): void;
 }
 
 /**
@@ -426,6 +447,58 @@ class Project extends ServiceObject {
       {
         method: 'POST',
         uri: ':undelete',
+      },
+      (err, resp) => {
+        callback!(err, resp);
+      }
+    );
+  }
+
+  getAncestry(): Promise<GetAncestryResponse>;
+  getAncestry(callback: GetAncestryCallback): void;
+  /**
+   * @typedef {array} GetAncestryResponse
+   * @property {Ancestry} 0 The new [ancestry]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getAncestry#response-body}.
+   */
+  /**
+   * @callback GetAncestryCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Ancestry} ancestry The new [ancestry]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getAncestry#response-body}.
+   */
+  /**
+   * Get a list of ancestors in the resource.
+   *
+   * @see [projects: getAncestry API Documentation]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getAncestry}
+   *
+   * @param {GetAncestryCallback} [callback] Callback function.
+   * @returns {Promise<GetAncestryResponse>}
+   *
+   * @example
+   * const {Resource} = require('@google-cloud/resource');
+   * const resource = new Resource();
+   * const project = resource.project('grape-spaceship-123');
+   *
+   * project.getAncestry((err, ancestry) => {
+   *   if (!err) {
+   *     // console.log(ancestry).
+   *   }
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * project.getAncestry().then((data) => {
+   *   const ancestry = data[0];
+   * });
+   */
+  getAncestry(
+    callback?: GetAncestryCallback
+  ): void | Promise<GetAncestryResponse> {
+    callback = callback || util.noop;
+    this.request(
+      {
+        method: 'POST',
+        uri: ':getAncestry',
       },
       (err, resp) => {
         callback!(err, resp);
