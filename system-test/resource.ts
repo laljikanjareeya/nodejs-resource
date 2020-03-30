@@ -66,6 +66,13 @@ describe('Resource', () => {
         done();
       });
     });
+
+    it('should get ancestry', done => {
+      project.getAncestry((err, ancestry) => {
+        assert.notStrictEqual(ancestry!.ancestor.length, 0);
+        done();
+      });
+    });
   });
 
   // Auth through the gcloud SDK is required to:

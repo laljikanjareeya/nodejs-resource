@@ -26,6 +26,7 @@ import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as proxyquire from 'proxyquire';
 import {Policy} from '../src/project';
+import {Ancestry} from '../src/project';
 
 let promisified = false;
 const fakePromisify = Object.assign({}, promisify, {
@@ -190,6 +191,58 @@ describe('Project', () => {
     it('should not require a callback', () => {
       assert.doesNotThrow(() => {
         project.restore();
+      });
+    });
+  });
+
+  describe('getAncestry', () => {
+    const error = new Error('Error.');
+    const apiResponse = {
+      ancestor: [
+        {
+          resourceId: {
+            id: 'project-id',
+            type: 'project',
+          },
+        },
+        {
+          resourceId: {
+            id: '396521612403',
+            type: 'folder',
+          },
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      project.request = (
+        reqOpts: DecorateRequestOptions,
+        callback: Function
+      ) => {
+        callback(error, apiResponse);
+      };
+    });
+
+    it('should make the correct API request', done => {
+      project.request = (reqOpts: DecorateRequestOptions) => {
+        assert.strictEqual(reqOpts.method, 'POST');
+        assert.strictEqual(reqOpts.uri, ':getAncestry');
+        done();
+      };
+      project.getAncestry(assert.ifError);
+    });
+
+    it('should execute the callback with error & API response', done => {
+      project.getAncestry((err: Error, apiResponse_: Ancestry) => {
+        assert.strictEqual(err, error);
+        assert.strictEqual(apiResponse_, apiResponse);
+        done();
+      });
+    });
+
+    it('should not require a callback', () => {
+      assert.doesNotThrow(() => {
+        project.getAncestry();
       });
     });
   });
