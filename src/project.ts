@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-import {
-  Operation,
-  ServiceObject,
-  util,
-  Metadata,
-  ApiError,
-} from '@google-cloud/common';
+import {Operation, ServiceObject, util, Metadata} from '@google-cloud/common';
 import {promisifyAll} from '@google-cloud/promisify';
 
-import {CreateProjectCallback, CreateProjectResponse, Resource} from '.';
+import {
+  CreateProjectCallback,
+  CreateProjectResponse,
+  Resource,
+  PagedResponse,
+  RequestCallback,
+  NormalCallback,
+} from '.';
 
 export type RestoreCallback = (
   err: Error | null,
@@ -85,11 +86,77 @@ export interface ResourceId {
   id: string;
   type: string;
 }
-
 export type GetAncestryResponse = [Ancestry];
-export interface GetAncestryCallback {
-  (err: ApiError | null, ancestry?: Ancestry): void;
+export type GetAncestryCallback = NormalCallback<Ancestry>;
+export interface OrgPolicy {
+  version: number;
+  constraint: string;
+  etag: string;
+  updateTime: string;
+  listPolicy: ListPolicy;
+  booleanPolicy: BooleanPolicy;
+  restoreDefault: object;
 }
+export interface ListPolicy {
+  allowedValues: string[];
+  deniedValues: string[];
+  allValues: AllValues;
+  suggestedValue: string;
+  inheritFromParent: boolean;
+}
+export enum AllValues {
+  ALL_VALUES_UNSPECIFIED,
+  ALLOW,
+  DENY,
+}
+export interface BooleanPolicy {
+  enforced: boolean;
+}
+
+export type GetOrgPolicyResponse = [OrgPolicy];
+export type GetOrgPolicyCallback = NormalCallback<OrgPolicy>;
+
+export interface GetOrgPolicyOptions {
+  autoPaginate?: boolean;
+  maxApiCalls?: number;
+  maxResults?: number;
+  pageSize?: number;
+  pageToken?: string;
+}
+
+export interface Constraint {
+  version: number;
+  name: string;
+  displayName: string;
+  description: string;
+  constraintDefault: ConstraintDefault;
+  listConstraint: {
+    suggestedValue: string;
+    supportsUnder: boolean;
+  };
+  booleanConstraint: object;
+}
+
+export enum ConstraintDefault {
+  CONSTRAINT_DEFAULT_UNSPECIFIED,
+  ALLOW,
+  DENY,
+}
+
+export interface ListAvailableOrgPolicyConstraintsResponse {
+  constraints: Constraint[];
+  nextPageToken: string;
+}
+
+export type GetAvailableOrgPolicyConstraintsResponse = PagedResponse<
+  Constraint,
+  ListAvailableOrgPolicyConstraintsResponse
+>;
+
+export type GetAvailableOrgPolicyConstraintsCallback = RequestCallback<
+  Constraint,
+  ListAvailableOrgPolicyConstraintsResponse
+>;
 
 /**
  * A Project object allows you to interact with a Google Cloud Platform project.
@@ -502,6 +569,66 @@ class Project extends ServiceObject {
       },
       (err, resp) => {
         callback!(err, resp);
+      }
+    );
+  }
+
+  getEffectiveOrgPolicy(
+    constraint: string,
+    callback?: GetOrgPolicyCallback
+  ): void | Promise<GetOrgPolicyResponse> {
+    callback = callback || util.noop;
+    this.request(
+      {
+        method: 'POST',
+        uri: ':getEffectiveOrgPolicy',
+        body: {
+          constraint,
+        },
+      },
+      (err, resp) => {
+        callback!(err, resp);
+      }
+    );
+  }
+
+  getOrgPolicy(
+    constraint: string,
+    callback?: GetOrgPolicyCallback
+  ): void | Promise<GetOrgPolicyResponse> {
+    callback = callback || util.noop;
+    this.request(
+      {
+        method: 'POST',
+        uri: ':getOrgPolicy',
+        body: {
+          constraint,
+        },
+      },
+      (err, resp) => {
+        callback!(err, resp);
+      }
+    );
+  }
+
+  getAvailableOrgPolicyConstraints(
+    optionsOrCallback?:
+      | GetOrgPolicyOptions
+      | GetAvailableOrgPolicyConstraintsCallback,
+    callback?: GetAvailableOrgPolicyConstraintsCallback
+  ): void | Promise<GetAvailableOrgPolicyConstraintsResponse> {
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : callback;
+    this.request(
+      {
+        method: 'POST',
+        uri: ':listAvailableOrgPolicyConstraints',
+        qs: options,
+      },
+      (err, constraints, ...resp) => {
+        callback!(err, constraints, ...resp);
       }
     );
   }
