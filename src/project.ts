@@ -525,15 +525,15 @@ class Project extends ServiceObject {
   getAncestry(callback: GetAncestryCallback): void;
   /**
    * @typedef {array} GetAncestryResponse
-   * @property {Ancestry} 0 The new [ancestry]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getAncestry#response-body}.
+   * @property {Ancestry} 0 This project's [ancestry]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getAncestry#response-body}.
    */
   /**
    * @callback GetAncestryCallback
    * @param {?Error} err Request error, if any.
-   * @param {Ancestry} ancestry The new [ancestry]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getAncestry#response-body}.
+   * @param {Ancestry} ancestry This project's [ancestry]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getAncestry#response-body}.
    */
   /**
-   * Get a list of ancestors in the resource.
+   * Get a list of ancestors for this project.
    *
    * @see [projects: getAncestry API Documentation]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getAncestry}
    *
@@ -547,7 +547,7 @@ class Project extends ServiceObject {
    *
    * project.getAncestry((err, ancestry) => {
    *   if (!err) {
-   *     // console.log(ancestry).
+   *     console.log(ancestry).
    *   }
    * });
    *
@@ -573,6 +573,48 @@ class Project extends ServiceObject {
     );
   }
 
+  getEffectiveOrgPolicy(constraint: string): Promise<GetOrgPolicyResponse>;
+  getEffectiveOrgPolicy(
+    constraint: string,
+    callback: GetOrgPolicyCallback
+  ): void;
+  /**
+   * @typedef {array} GetOrgPolicyResponse
+   * @property {OrgPolicy} 0 This project's effective [OrgPolicy]{@link https://cloud.google.com/resource-manager/reference/rest/v1/Policy}.
+   */
+  /**
+   * @callback GetOrgPolicyCallback
+   * @param {?Error} err Request error, if any.
+   * @param {OrgPolicy} policy This project's effective [OrgPolicy]{@link https://cloud.google.com/resource-manager/reference/rest/v1/Policy}.
+   */
+  /**
+   * Get the effective policy this project.
+   *
+   * @see [projects: getEffectiveOrgPolicy API Documentation]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getEffectiveOrgPolicy}
+   *
+   * @param {string} constraint The name of the resource to start computing the effective policy.
+   * @param {GetOrgPolicyCallback} [callback] Callback function.
+   * @returns {Promise<GetOrgPolicyResponse>}
+   *
+   * @example
+   * const {Resource} = require('@google-cloud/resource');
+   * const resource = new Resource();
+   * const project = resource.project('grape-spaceship-123');
+   * const constraint = 'constraints/compute.requireServiceAccountUsagePermissionForFirewalls';
+   *
+   * project.getEffectiveOrgPolicy(constraint, (err, policy) => {
+   *   if (!err) {
+   *     console.log(policy).
+   *   }
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * project.getEffectiveOrgPolicy(constraint).then((data) => {
+   *   const policy = data[0];
+   * });
+   */
   getEffectiveOrgPolicy(
     constraint: string,
     callback?: GetOrgPolicyCallback
@@ -592,6 +634,45 @@ class Project extends ServiceObject {
     );
   }
 
+  getOrgPolicy(constraint: string): Promise<GetOrgPolicyResponse>;
+  getOrgPolicy(constraint: string, callback: GetOrgPolicyCallback): void;
+  /**
+   * @typedef {array} GetOrgPolicyResponse
+   * @property {OrgPolicy} 0 This project's effective [OrgPolicy]{@link https://cloud.google.com/resource-manager/reference/rest/v1/Policy}.
+   */
+  /**
+   * @callback GetOrgPolicyCallback
+   * @param {?Error} err Request error, if any.
+   * @param {OrgPolicy} policy This project's effective [OrgPolicy]{@link https://cloud.google.com/resource-manager/reference/rest/v1/Policy}.
+   */
+  /**
+   * Get the policy this project.
+   *
+   * @see [projects: getOrgPolicy API Documentation]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getOrgPolicy}
+   *
+   * @param {string} constraint The name of the resource to start computing the effective policy.
+   * @param {GetOrgPolicyCallback} [callback] Callback function.
+   * @returns {Promise<GetOrgPolicyResponse>}
+   *
+   * @example
+   * const {Resource} = require('@google-cloud/resource');
+   * const resource = new Resource();
+   * const project = resource.project('grape-spaceship-123');
+   * const constraint = 'constraints/compute.requireServiceAccountUsagePermissionForFirewalls';
+   *
+   * project.getOrgPolicy(constraint, (err, policy) => {
+   *   if (!err) {
+   *     console.log(policy).
+   *   }
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * project.getOrgPolicy(constraint).then((data) => {
+   *   const policy = data[0];
+   * });
+   */
   getOrgPolicy(
     constraint: string,
     callback?: GetOrgPolicyCallback
@@ -611,6 +692,69 @@ class Project extends ServiceObject {
     );
   }
 
+  getAvailableOrgPolicyConstraints(
+    options?: GetOrgPolicyOptions
+  ): Promise<GetAvailableOrgPolicyConstraintsResponse>;
+  getAvailableOrgPolicyConstraints(
+    callback: GetAvailableOrgPolicyConstraintsCallback
+  ): void;
+  getAvailableOrgPolicyConstraints(
+    options: GetOrgPolicyOptions,
+    callback: GetAvailableOrgPolicyConstraintsCallback
+  ): void;
+  /**
+   * @typedef {array} GetAvailableOrgPolicyConstraintsResponse
+   * @property {Constraint[]} 0 Array of [Constraint]{@link https://cloud.google.com/resource-manager/reference/rest/v1/ListAvailableOrgPolicyConstraintsResponse#Constraint}.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback GetAvailableOrgPolicyConstraintsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Constraint[]} constraints Array of [Constraint]{@link https://cloud.google.com/resource-manager/reference/rest/v1/ListAvailableOrgPolicyConstraintsResponse#Constraint}.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Get the policy this project.
+   *
+   * @see [projects: getAvailableOrgPolicyConstraints API Documentation]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/listAvailableOrgPolicyConstraints}
+   *
+   * @param {GetOrgPolicyOptions} options Query object for listing available constraints.
+   * @param {GetAvailableOrgPolicyConstraintsCallback} [callback] Callback function.
+   * @returns {Promise<GetAvailableOrgPolicyConstraintsResponse>}
+   *
+   * @example
+   * const {Resource} = require('@google-cloud/resource');
+   * const resource = new Resource();
+   * const project = resource.project('grape-spaceship-123');
+   *
+   * project.getAvailableOrgPolicyConstraints((err, constraints) => {
+   *   if (!err) {
+   *     console.log(constraints).
+   *   }
+   * });
+   *
+   * //-
+   * // To control how many API requests are made and page through the results
+   * // manually, set `autoPaginate` to `false`.
+   * //-
+   * function callback(err, constraints, nextQuery, apiResponse) {
+   *   if (nextQuery) {
+   *     // More results exist.
+   *     project.getAvailableOrgPolicyConstraints(nextQuery, callback);
+   *   }
+   * }
+   *
+   * project.getAvailableOrgPolicyConstraints({
+   *   autoPaginate: false
+   * }, callback);
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * project.getAvailableOrgPolicyConstraints(constraint).then((data) => {
+   *   const constraints = data[0];
+   * });
+   */
   getAvailableOrgPolicyConstraints(
     optionsOrCallback?:
       | GetOrgPolicyOptions
