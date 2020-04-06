@@ -588,7 +588,7 @@ class Project extends ServiceObject {
    * @param {OrgPolicy} policy This project's effective [OrgPolicy]{@link https://cloud.google.com/resource-manager/reference/rest/v1/Policy}.
    */
   /**
-   * Get the effective policy this project.
+   * Get an effective policy this project.
    *
    * @see [projects: getEffectiveOrgPolicy API Documentation]{@link https://cloud.google.com/resource-manager/reference/rest/v1/projects/getEffectiveOrgPolicy}
    *

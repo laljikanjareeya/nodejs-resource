@@ -69,7 +69,36 @@ describe('Resource', () => {
 
     it('should get ancestry', done => {
       project.getAncestry((err, ancestry) => {
+        assert.ifError(err);
         assert.notStrictEqual(ancestry!.ancestor.length, 0);
+        done();
+      });
+    });
+
+    it('should get an effective policy', done => {
+      const constraint =
+        'constraints/compute.requireServiceAccountUsagePermissionForFirewalls';
+      project.getEffectiveOrgPolicy(constraint, (err, policy) => {
+        assert.ifError(err);
+        assert.strictEqual(constraint, policy!.constraint);
+        done();
+      });
+    });
+
+    it('should get Org policy', done => {
+      const constraint =
+        'constraints/compute.requireServiceAccountUsagePermissionForFirewalls';
+      project.getOrgPolicy(constraint, (err, policy) => {
+        assert.ifError(err);
+        assert.strictEqual(constraint, policy!.constraint);
+        done();
+      });
+    });
+
+    it('should get available orgPolicy constraints', done => {
+      project.getAvailableOrgPolicyConstraints((err, contrains) => {
+        assert.ifError(err);
+        assert.notStrictEqual(contrains!.length, 0);
         done();
       });
     });
