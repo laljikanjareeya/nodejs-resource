@@ -20,12 +20,13 @@ import {
   ServiceObjectConfig,
   util,
   Metadata,
+  ApiError,
 } from '@google-cloud/common';
 import * as promisify from '@google-cloud/promisify';
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as proxyquire from 'proxyquire';
-import {Policy} from '../src/project';
+import {Policy, OrgPolicy} from '../src/project';
 import {Ancestry} from '../src/project';
 
 let promisified = false;
@@ -158,43 +159,6 @@ describe('Project', () => {
     });
   });
 
-  describe('restore', () => {
-    const error = new Error('Error.');
-    const apiResponse = {a: 'b', c: 'd'};
-
-    beforeEach(() => {
-      project.request = (
-        reqOpts: DecorateRequestOptions,
-        callback: Function
-      ) => {
-        callback(error, apiResponse);
-      };
-    });
-
-    it('should make the correct API request', done => {
-      project.request = (reqOpts: DecorateRequestOptions) => {
-        assert.strictEqual(reqOpts.method, 'POST');
-        assert.strictEqual(reqOpts.uri, ':undelete');
-        done();
-      };
-      project.restore(assert.ifError);
-    });
-
-    it('should execute the callback with error & API response', done => {
-      project.restore((err: Error, apiResponse_: Metadata) => {
-        assert.strictEqual(err, error);
-        assert.strictEqual(apiResponse_, apiResponse);
-        done();
-      });
-    });
-
-    it('should not require a callback', () => {
-      assert.doesNotThrow(() => {
-        project.restore();
-      });
-    });
-  });
-
   describe('getAncestry', () => {
     const error = new Error('Error.');
     const apiResponse = {
@@ -239,10 +203,79 @@ describe('Project', () => {
         done();
       });
     });
+  });
+
+  describe('getEffectiveOrgPolicy', () => {
+    const error = new Error('Error.');
+    const constraint =
+      'constraints/compute.requireServiceAccountUsagePermissionForFirewalls';
+    const apiResponse = {
+      constraint,
+    };
+
+    beforeEach(() => {
+      project.request = (
+        reqOpts: DecorateRequestOptions,
+        callback: Function
+      ) => {
+        callback(error, apiResponse);
+      };
+    });
+
+    it('should make the correct API request', done => {
+      project.request = (reqOpts: DecorateRequestOptions) => {
+        assert.strictEqual(reqOpts.method, 'POST');
+        assert.strictEqual(reqOpts.uri, ':getEffectiveOrgPolicy');
+        done();
+      };
+      project.getEffectiveOrgPolicy(assert.ifError);
+    });
+
+    it('should execute the callback with error & API response', done => {
+      project.getEffectiveOrgPolicy(
+        constraint,
+        (err: ApiError, apiResponse_: OrgPolicy) => {
+          assert.strictEqual(err, error);
+          assert.strictEqual(apiResponse_, apiResponse);
+          done();
+        }
+      );
+    });
+  });
+
+  describe('restore', () => {
+    const error = new Error('Error.');
+    const apiResponse = {a: 'b', c: 'd'};
+
+    beforeEach(() => {
+      project.request = (
+        reqOpts: DecorateRequestOptions,
+        callback: Function
+      ) => {
+        callback(error, apiResponse);
+      };
+    });
+
+    it('should make the correct API request', done => {
+      project.request = (reqOpts: DecorateRequestOptions) => {
+        assert.strictEqual(reqOpts.method, 'POST');
+        assert.strictEqual(reqOpts.uri, ':undelete');
+        done();
+      };
+      project.restore(assert.ifError);
+    });
+
+    it('should execute the callback with error & API response', done => {
+      project.restore((err: Error, apiResponse_: Metadata) => {
+        assert.strictEqual(err, error);
+        assert.strictEqual(apiResponse_, apiResponse);
+        done();
+      });
+    });
 
     it('should not require a callback', () => {
       assert.doesNotThrow(() => {
-        project.getAncestry();
+        project.restore();
       });
     });
   });

@@ -619,7 +619,6 @@ class Project extends ServiceObject {
     constraint: string,
     callback?: GetOrgPolicyCallback
   ): void | Promise<GetOrgPolicyResponse> {
-    callback = callback || util.noop;
     this.request(
       {
         method: 'POST',
