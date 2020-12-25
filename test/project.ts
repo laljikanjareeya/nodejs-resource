@@ -20,12 +20,18 @@ import {
   ServiceObjectConfig,
   util,
   Metadata,
+  ApiError,
 } from '@google-cloud/common';
 import * as promisify from '@google-cloud/promisify';
 import * as assert from 'assert';
 import {describe, it, before, beforeEach} from 'mocha';
 import * as proxyquire from 'proxyquire';
-import {Policy} from '../src/project';
+import {
+  Policy,
+  OrgPolicy,
+  GetAvailableOrgPolicyConstraintsResponse,
+} from '../src/project';
+import {Ancestry} from '../src/project';
 
 let promisified = false;
 const fakePromisify = Object.assign({}, promisify, {
@@ -153,6 +159,174 @@ describe('Project', () => {
         assert.strictEqual(apiResponse_, policy);
         done();
       });
+    });
+  });
+
+  describe('getAncestry', () => {
+    const error = new Error('Error.');
+    const apiResponse = {
+      ancestor: [
+        {
+          resourceId: {
+            id: 'project-id',
+            type: 'project',
+          },
+        },
+        {
+          resourceId: {
+            id: '396521612403',
+            type: 'folder',
+          },
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      project.request = (
+        reqOpts: DecorateRequestOptions,
+        callback: Function
+      ) => {
+        callback(error, apiResponse);
+      };
+    });
+
+    it('should make the correct API request', done => {
+      project.request = (reqOpts: DecorateRequestOptions) => {
+        assert.strictEqual(reqOpts.method, 'POST');
+        assert.strictEqual(reqOpts.uri, ':getAncestry');
+        done();
+      };
+      project.getAncestry(assert.ifError);
+    });
+
+    it('should execute the callback with error & API response', done => {
+      project.getAncestry((err: Error, apiResponse_: Ancestry) => {
+        assert.strictEqual(err, error);
+        assert.strictEqual(apiResponse_, apiResponse);
+        done();
+      });
+    });
+  });
+
+  describe('getEffectiveOrgPolicy', () => {
+    const error = new Error('Error.');
+    const constraint =
+      'constraints/compute.requireServiceAccountUsagePermissionForFirewalls';
+    const apiResponse = {
+      constraint,
+    };
+
+    beforeEach(() => {
+      project.request = (
+        reqOpts: DecorateRequestOptions,
+        callback: Function
+      ) => {
+        callback(error, apiResponse);
+      };
+    });
+
+    it('should make the correct API request', done => {
+      project.request = (reqOpts: DecorateRequestOptions) => {
+        assert.strictEqual(reqOpts.method, 'POST');
+        assert.strictEqual(reqOpts.uri, ':getEffectiveOrgPolicy');
+        done();
+      };
+      project.getEffectiveOrgPolicy(assert.ifError);
+    });
+
+    it('should execute the callback with error & API response', done => {
+      project.getEffectiveOrgPolicy(
+        constraint,
+        (err: ApiError, apiResponse_: OrgPolicy) => {
+          assert.strictEqual(err, error);
+          assert.strictEqual(apiResponse_, apiResponse);
+          done();
+        }
+      );
+    });
+  });
+
+  describe('getOrgPolicy', () => {
+    const error = new Error('Error.');
+    const constraint =
+      'constraints/compute.requireServiceAccountUsagePermissionForFirewalls';
+    const apiResponse = {
+      constraint,
+      etag: 'BwVUSr8Q7Ng=',
+    };
+
+    beforeEach(() => {
+      project.request = (
+        reqOpts: DecorateRequestOptions,
+        callback: Function
+      ) => {
+        callback(error, apiResponse);
+      };
+    });
+
+    it('should make the correct API request', done => {
+      project.request = (reqOpts: DecorateRequestOptions) => {
+        assert.strictEqual(reqOpts.method, 'POST');
+        assert.strictEqual(reqOpts.uri, ':getOrgPolicy');
+        done();
+      };
+      project.getOrgPolicy(assert.ifError);
+    });
+
+    it('should execute the callback with error & API response', done => {
+      project.getOrgPolicy(
+        constraint,
+        (err: ApiError, apiResponse_: OrgPolicy) => {
+          assert.strictEqual(err, error);
+          assert.strictEqual(apiResponse_, apiResponse);
+          done();
+        }
+      );
+    });
+  });
+
+  describe('getAvailableOrgPolicyConstraints', () => {
+    const error = new Error('Error.');
+    const apiResponse = {
+      constraints: [
+        {
+          constraintDefault: 'ALLOW',
+          description: 'description.',
+          displayName: 'Require VPC Connector (Cloud Functions)',
+          name: 'constraints/cloudfunctions.requireVPCConnector',
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      project.request = (
+        reqOpts: DecorateRequestOptions,
+        callback: Function
+      ) => {
+        callback(error, apiResponse);
+      };
+    });
+
+    it('should make the correct API request', done => {
+      project.request = (reqOpts: DecorateRequestOptions) => {
+        assert.strictEqual(reqOpts.method, 'POST');
+        assert.strictEqual(reqOpts.uri, ':listAvailableOrgPolicyConstraints');
+        done();
+      };
+      project.getAvailableOrgPolicyConstraints(assert.ifError);
+    });
+
+    it('should execute the callback with error & API response', done => {
+      project.getAvailableOrgPolicyConstraints(
+        (
+          err: ApiError,
+          apiResponse_: GetAvailableOrgPolicyConstraintsResponse
+        ) => {
+          assert.strictEqual(err, error);
+          assert.strictEqual(apiResponse_, apiResponse);
+          done();
+        }
+      );
     });
   });
 

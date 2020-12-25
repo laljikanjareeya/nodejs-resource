@@ -19,11 +19,33 @@ import {
   Operation,
   Service,
   Metadata,
+  ApiError,
 } from '@google-cloud/common';
 import {paginator} from '@google-cloud/paginator';
 import {promisifyAll} from '@google-cloud/promisify';
 
 import {Project} from './project';
+
+export type PagedResponse<Item, Response> =
+  | [Item[]]
+  | [Item[], {} | null, Response];
+
+export type RequestCallback<T, R = void> = R extends void
+  ? NormalCallback<T>
+  : PagedCallback<T, R>;
+
+export interface NormalCallback<TResponse> {
+  (err: ApiError | null, res?: TResponse | null): void;
+}
+
+export interface PagedCallback<Item, Response> {
+  (
+    err: ApiError | null,
+    results?: Item[] | null,
+    nextQuery?: {} | null,
+    response?: Response | null
+  ): void;
+}
 
 export type CreateProjectCallback = (
   err: Error | null,
@@ -198,6 +220,16 @@ class Resource extends Service {
     this.getProjectsStream = paginator.streamify('getProjects');
   }
 
+  createProject(
+    id: string,
+    options?: CreateProjectOptions
+  ): Promise<CreateProjectResponse>;
+  createProject(
+    id: string,
+    options: CreateProjectOptions,
+    callback: CreateProjectCallback
+  ): void;
+  createProject(id: string, callback: CreateProjectCallback): void;
   /**
    * Create a project.
    *
@@ -257,16 +289,6 @@ class Resource extends Service {
    */
   createProject(
     id: string,
-    options?: CreateProjectOptions
-  ): Promise<CreateProjectResponse>;
-  createProject(
-    id: string,
-    options: CreateProjectOptions,
-    callback: CreateProjectCallback
-  ): void;
-  createProject(id: string, callback: CreateProjectCallback): void;
-  createProject(
-    id: string,
     optionsOrCallback?: CreateProjectOptions | CreateProjectCallback,
     callback?: CreateProjectCallback
   ): void | Promise<CreateProjectResponse> {
@@ -295,6 +317,9 @@ class Resource extends Service {
     );
   }
 
+  getProjects(options?: GetProjectOptions): Promise<GetProjectsResponse>;
+  getProjects(options: GetProjectOptions, callback: GetProjectsCallback): void;
+  getProjects(callback: GetProjectsCallback): void;
   /**
    * Get a list of projects.
    *
@@ -346,9 +371,6 @@ class Resource extends Service {
    *   const projects = data[0];
    * });
    */
-  getProjects(options?: GetProjectOptions): Promise<GetProjectsResponse>;
-  getProjects(options: GetProjectOptions, callback: GetProjectsCallback): void;
-  getProjects(callback: GetProjectsCallback): void;
   getProjects(
     optionsOrCallback?: GetProjectOptions | GetProjectsCallback,
     callback?: GetProjectsCallback
